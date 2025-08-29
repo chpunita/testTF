@@ -1,0 +1,2 @@
+e56d652d70538b896294bb5affad93b6ae42939e 233680272 terraform-provider-azurerm_v4.38.1_x5.exe
+2b1dc769784d4f9d6c59fa38c84762b0b104eda0 233942416 terraform-provider-azurerm_v4.39.0_x5.exe
