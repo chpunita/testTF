@@ -1,0 +1,20 @@
+name: Terraform_Pipeling
+
+on: workflow_dispatch
+
+jobs:
+  Terraform_init:
+    name: Terraform Init, plan
+    runs-on : self-hosted
+    steps:
+       - name: Checkout
+         uses: actions/checkout@v5.0.0
+      
+
+       - name: Install Terraform
+  # You may pin to the exact commit or the version.
+  # uses: little-core-labs/install-terraform@1e577535d279f1999a5abf60337ddc3ff225e79d
+         uses: little-core-labs/install-terraform@v2.0.0
+         with:
+            # Version of terraform to download
+            version: 1.13.0
