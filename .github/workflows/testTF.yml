@@ -1,6 +1,12 @@
 name: Terraform_Pipeling
+  
+# on: workflow_dispatch
 
-on: workflow_dispatch
+on: 
+  push:
+    branches:
+     - ' main/**'
+     - 'master/**'
 
 jobs:
   Terraform_init:
@@ -18,3 +24,30 @@ jobs:
          with:
             # Version of terraform to download
             version: 1.13.0
+
+
+# after rubnning install, next will be terraform init. if you have backenf configured here, then before this step, its important to do azure login.
+# so itcan access the storage account container.
+
+       - name: Azure Login
+          uses: Azure/login@v2.3.0
+          with:
+            # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
+            creds: # optional
+            # ClientId of the Azure Service principal created.
+            client-id: # optional
+            # TenantId of the Azure Service principal created.
+            tenant-id: # optional
+            # Azure subscriptionId
+            subscription-id: # optional
+            # Set this value to true to enable Azure PowerShell Login in addition to Azure CLI login
+            enable-AzPSSession: # optional
+            # Name of the environment. Supported values are azurecloud, azurestack, azureusgovernment, azurechinacloud, azuregermancloud. Default being azurecloud
+            environment: # optional, default is azurecloud
+            # Set this value to true to enable support for accessing tenants without subscriptions
+            allow-no-subscriptions: # optional
+            # Provide audience field for access-token. Default value is api://AzureADTokenExchange
+            audience: # optional, default is api://AzureADTokenExchange
+            # The type of authentication. Supported values are SERVICE_PRINCIPAL, IDENTITY. Default value is SERVICE_PRINCIPAL
+            auth-type: # optional, default is SERVICE_PRINCIPAL
+                  
