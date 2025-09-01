@@ -53,10 +53,18 @@ stages:
             dir: '$(System.DefaultWorkingDirectory)\TestTF'
 
             
+        - task: AngularCLI@1
+          inputs:
+            command: 'lint'
+            project: '''$(System.DefaultWorkingDirectory)\TestTF'''
+            verbose: true
+            DisableAnalytics: false
 
 
   - stage: ManualValidattionNapply
     displayName:  Manual Validate and init and then apply
+    dependsOn: build
+    
     jobs:
     - job: ManualValidation
       pool: server
