@@ -8,7 +8,7 @@ trigger:
 - master/**
 
 pool:
-  pool: dopagent
+  pool: newagent
 
 
 stages: 
