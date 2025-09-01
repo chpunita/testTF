@@ -26,6 +26,7 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'init'
+            commandOptions: -reconfigure
             workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
             backendServiceArm: 'scm_manual'
             backendAzureRmResourceGroupName: 'rg_main'
