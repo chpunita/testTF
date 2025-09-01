@@ -9,6 +9,13 @@ terraform {
       version = "~>3.0"
     }
   }
+  backend "azurerm" { 
+    resource_group_name = "rg_main"
+    storage_account_name = "mainstrgacct"
+    container_name = "maincontainer"
+    key = "tf.tfstate"
+    
+  }
 }
 
 provider "azurerm" {
