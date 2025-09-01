@@ -1,0 +1,109 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+- master/**
+
+pool:
+  pool: dopagent
+
+
+stages: 
+  - stage: build
+    displayName:  buid and install
+
+    jobs:
+      - job:  terraformInstallInit
+        displayName:  Terraform install , init and plan
+        steps:
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: 'latest'
+
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
+            backendServiceArm: 'scm_manual'
+            backendAzureRmResourceGroupName: 'rg_main'
+            backendAzureRmStorageAccountName: 'mainstrgacct'
+            backendAzureRmContainerName: 'maincontainer'
+            backendAzureRmKey: 'terraform.tfstate'
+          
+
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: 'TestTF'
+            environmentServiceNameAzureRM: 'scm_manual'
+
+  - stage: SecurityValidation
+    displayName: Apply security validation
+    jobs:
+      - job:
+        steps:
+        - task: tfsec@1
+          inputs:
+            version: 'v1.26.0'
+            dir: '$(System.DefaultWorkingDirectory)\TestTF'
+
+            
+        - task: AngularCLI@1
+          inputs:
+            command: 'lint'
+            project: '''$(System.DefaultWorkingDirectory)\TestTF'''
+            verbose: true
+            DisableAnalytics: false
+
+
+  - stage: ManualValidattionNapply
+    displayName:  Manual Validate and init and then apply
+    dependsOn: build
+    
+    jobs:
+    - job: ManualValidation
+      pool: server
+      steps:
+      - task: ManualValidation@1
+        inputs:
+          notifyUsers: 'punita@test.com'
+
+
+    - job: TerraformApply
+      dependsOn: ManualValidation
+      steps:
+       
+      - task: TerraformTask@5
+        inputs:
+          provider: 'azurerm'
+          command: 'init'
+          workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
+          backendServiceArm: 'scm_manual'
+          backendAzureRmResourceGroupName: 'rg_main'
+          backendAzureRmStorageAccountName: 'mainstrgacct'
+          backendAzureRmContainerName: 'maincontainer'
+          backendAzureRmKey: 'terraform.tfstate'
+
+
+      - task: TerraformTask@5
+        inputs:
+          provider: 'azurerm'
+          command: 'plan'
+          workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
+          environmentServiceNameAzureRM: 'scm_manual'
+
+
+      # - task: TerraformTask@5
+      #   inputs:
+      #     provider: 'azurerm'
+      #     command: 'apply'
+      #     workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
+      #     environmentServiceNameAzureRM: 'scm_manual'
+
+
+          
