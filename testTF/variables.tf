@@ -25,3 +25,9 @@ variable myinfra_config {
 
   }
 }
+
+variable rgcount {
+  description = "Number of resources to create"
+  type        = number
+  default     = 1
+}
