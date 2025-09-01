@@ -42,7 +42,13 @@ stages:
             workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
             environmentServiceNameAzureRM: 'scm_manual'
 
-  - stage: 
+  - stage: SecurityValidation
+    displayName: Apply security validation
+    jobs:
+      - job:
+        steps:
+
+
 
   - stage: ManualValidattionNapply
     displayName:  Manual Validate and init and then apply
@@ -56,8 +62,9 @@ stages:
 
 
     - job: TerraformApply
+      dependsOn: ManualValidation
       steps:
-        - 
+       
       - task: TerraformTask@5
         inputs:
           provider: 'azurerm'
@@ -69,13 +76,21 @@ stages:
           backendAzureRmContainerName: 'maincontainer'
           backendAzureRmKey: 'terraform.tfstate'
 
-      
+
       - task: TerraformTask@5
         inputs:
           provider: 'azurerm'
-          command: 'apply'
+          command: 'plan'
           workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
           environmentServiceNameAzureRM: 'scm_manual'
+
+
+      # - task: TerraformTask@5
+      #   inputs:
+      #     provider: 'azurerm'
+      #     command: 'apply'
+      #     workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
+      #     environmentServiceNameAzureRM: 'scm_manual'
 
 
           
