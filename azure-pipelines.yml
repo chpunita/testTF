@@ -31,7 +31,7 @@ stages:
             backendAzureRmResourceGroupName: 'rg_main'
             backendAzureRmStorageAccountName: 'mainstrgacct'
             backendAzureRmContainerName: 'maincontainer'
-            backendAzureRmKey: 'terraform.tfstate'
+            backendAzureRmKey: 'tf.tfstate'
           
 
         - task: TerraformTask@5
@@ -86,7 +86,7 @@ stages:
           backendAzureRmResourceGroupName: 'rg_main'
           backendAzureRmStorageAccountName: 'mainstrgacct'
           backendAzureRmContainerName: 'maincontainer'
-          backendAzureRmKey: 'terraform.tfstate'
+          backendAzureRmKey: 'tf.tfstate'
 
 
       - task: TerraformTask@5
