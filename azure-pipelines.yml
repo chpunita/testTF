@@ -8,7 +8,7 @@ trigger:
 - master/**
 
 pool:
-  pool: Azure Pipelines
+  pool: newagent
 
 
 stages: 
