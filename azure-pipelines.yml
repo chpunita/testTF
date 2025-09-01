@@ -27,7 +27,7 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'init'
-            workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF\'
+            workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
             backendServiceArm: 'scm_manual'
             backendAzureRmResourceGroupName: 'rg_main'
             backendAzureRmStorageAccountName: 'mainstrgacct'
@@ -39,7 +39,7 @@ stages:
           inputs:
             provider: 'azurerm'
             command: 'plan'
-            workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
+            workingDirectory: 'TestTF'
             environmentServiceNameAzureRM: 'scm_manual'
 
   - stage: SecurityValidation
@@ -47,7 +47,12 @@ stages:
     jobs:
       - job:
         steps:
-        
+        - task: tfsec@1
+          inputs:
+            version: 'v1.26.0'
+            dir: '$(System.DefaultWorkingDirectory)\TestTF'
+
+            
 
 
   - stage: ManualValidattionNapply
