@@ -1,14 +1,16 @@
 resource "azurerm_resource_group" "rg" {
-  name     =  var.myinfra_config["resource_group_name"]
-  location = var.myinfra_config["resource_group_location"]
+  #for_each = var.myinfra_config
+  name     =  var.myinfra_config["vms1"].resource_group_name
+  location = var.myinfra_config["vms1"].resource_group_location
 }
 
 resource "azurerm_storage_account" "storage" {
-  name                     = var.myinfra_config["storage_account"]
+  #for_each = var.myinfra_config
+  name                     = var.myinfra_config["vms1"].storage_account
   resource_group_name      = azurerm_resource_group.rg.name
   location                 = azurerm_resource_group.rg.location
-  account_tier             = var.myinfra_config["account_tier"]
-  account_replication_type = var.myinfra_config["account_replication_type"]
+  account_tier             = var.myinfra_config["vms1"].account_tier
+  account_replication_type = var.myinfra_config["vms1"].account_replication_type
   tags = {
     environment = "staging"
   }
@@ -22,9 +24,10 @@ resource "azurerm_storage_container" "mycont" {
 }
 
 resource "azurerm_virtual_network" "vnet" {
+  for_each = var.myinfra_config
   depends_on = [ azurerm_storage_account.storage]
-  name                = var.myinfra_config["vnet_name"]
-  address_space       = var.myinfra_config["address_space"]
+  name                = each.value.vnet_name
+  address_space       = each.value.address_space
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
   tags = {
@@ -33,28 +36,34 @@ resource "azurerm_virtual_network" "vnet" {
 }
 
 resource "azurerm_subnet" "subnet" {
-  name                 = var.myinfra_config["subnet_name"]
+  for_each = var.myinfra_config
+  name                 = each.value.subnet_name
   resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = var.myinfra_config["address_prefixes"]
+  #virtual_network_name = azurerm_virtual_network.vnet.name
+  virtual_network_name = "${each.value.vnet_name}"
+  address_prefixes     = each.value.address_prefixes
 }
 
 resource "azurerm_network_interface" "nic" {
+  for_each = var.myinfra_config
   depends_on = [azurerm_subnet.subnet]
-  name                = var.myinfra_config["nic_name"]
+  name                = each.value.nic_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
   ip_configuration {
-    name                          = var.myinfra_config["ip_name"]
-    subnet_id                     = azurerm_subnet.subnet.id
-    private_ip_address_allocation = var.myinfra_config["private_ip_address_allocation"]
-    public_ip_address_id          = azurerm_public_ip.pip.id
+    name                          = each.value.ip_name
+    #subnet_id                     = azurerm_subnet.subnet.id
+    subnet_id                     = azurerm_subnet.subnet[each.key].id
+    private_ip_address_allocation = each.value.private_ip_address_allocation
+    #public_ip_address_id          = azurerm_public_ip.pip.id
+    public_ip_address_id          = azurerm_public_ip.pip[each.key].id
   }
 }
 
 resource "azurerm_network_security_group" "nsg" {
-  name                = var.myinfra_config["nsg_name"]
+  for_each = var.myinfra_config
+  name                = each.value.nsg_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
@@ -73,29 +82,35 @@ resource "azurerm_network_security_group" "nsg" {
 
 
 resource "azurerm_public_ip" "pip" {
-  name                = var.myinfra_config["public_ip_name"]
+  for_each = var.myinfra_config
+  name                = each.value.public_ip_name
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  allocation_method   = var.myinfra_config["allocation_method"]
+  allocation_method   = each.value.allocation_method
   sku                 = "Standard"
 }
 
 
 resource "azurerm_network_interface_security_group_association" "nsgassoc" {
-  network_interface_id      = azurerm_network_interface.nic.id
-  network_security_group_id = azurerm_network_security_group.nsg.id
+  depends_on = [ azurerm_network_interface.nic, azurerm_network_security_group.nsg ]
+  for_each = var.myinfra_config
+  #network_interface_id      = azurerm_network_interface.nic.id
+  network_interface_id = azurerm_network_interface.nic[each.key].id
+  network_security_group_id = azurerm_network_security_group.nsg[each.key].id
+  #network_security_group_id = azurerm_network_security_group.nsg.id
 }
 
 
 resource "azurerm_linux_virtual_machine" "myvm" {
+  for_each = var.myinfra_config
    depends_on = [ azurerm_network_interface.nic ] 
-   name = var.myinfra_config.vm_name
-   resource_group_name = var.myinfra_config.resource_group_name
-   location = var.myinfra_config.resource_group_location
-   size = var.myinfra_config.vm_size
-   admin_username = var.myinfra_config.admin_username
-   admin_password = var.myinfra_config.admin_password
-   network_interface_ids = [azurerm_network_interface.nic.id,]
+   name = each.value.vm_name
+   resource_group_name      = azurerm_resource_group.rg.name
+   location                 = azurerm_resource_group.rg.location
+   size = each.value.vm_size
+   admin_username = each.value.admin_username
+   admin_password = each.value.admin_password
+   network_interface_ids = [azurerm_network_interface.nic[each.key].id,]
   disable_password_authentication = false
  
   os_disk {
@@ -114,11 +129,11 @@ resource "azurerm_linux_virtual_machine" "myvm" {
 
 # resource "azurerm_virtual_machine" "vm" {
 #   depends_on = [azurerm_network_interface.nic]
-#   name                  = var.myinfra_config["vm_name"]
+#   name                  = each.value.vm_name"]
 #   location              = azurerm_resource_group.rg.location
 #   resource_group_name   = azurerm_resource_group.rg.name
 #   network_interface_ids = [azurerm_network_interface.nic.id]
-#   vm_size               = var.myinfra_config["vm_size"]
+#   vm_size               = each.value.vm_size"]
 
 #   delete_os_disk_on_termination = true
  
