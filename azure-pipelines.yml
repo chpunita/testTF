@@ -98,12 +98,17 @@ stages:
           environmentServiceNameAzureRM: 'scm_manual'
 
 
+      # - task: TerraformTask@5
+      #   inputs:
+      #     provider: 'azurerm'
+      #     command: 'apply'
+      #     workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
+      #     environmentServiceNameAzureRM: 'scm_manual'
+
       - task: TerraformTask@5
         inputs:
           provider: 'azurerm'
-          command: 'apply'
+          command: 'destroy'
           workingDirectory: '$(System.DefaultWorkingDirectory)\TestTF'
           environmentServiceNameAzureRM: 'scm_manual'
-
-
           
